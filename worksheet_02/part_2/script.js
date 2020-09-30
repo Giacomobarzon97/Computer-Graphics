@@ -28,8 +28,10 @@ function main(){
         mousepos = vec2(2*(ev.clientX - bbox.left)/canvas.width - 1, 2*(canvas.height - ev.clientY + bbox.top - 1)/canvas.height - 1);
         gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
         gl.bufferSubData(gl.ARRAY_BUFFER, index*sizeof['vec2'], flatten(mousepos));
+
         gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
         gl.bufferSubData(gl.ARRAY_BUFFER, index*sizeof['vec4'], flatten(get_point_color()));
+
         num_points = Math.max(num_points, ++index); 
         index %= max_verts;        
         render(gl, num_points)
@@ -57,15 +59,15 @@ function get_background_color(){
     var background_green=document.getElementById("background_green");
     var background_blue=document.getElementById("background_blue");
 
-    return vec4(background_red.value, background_green.value, background_blue.value, )
+    return vec4(background_red.value, background_green.value, background_blue.value, 1)
 }
 
 function get_point_color(){
-    var background_red=document.getElementById("point_red");
-    var background_green=document.getElementById("point_green");
-    var background_blue=document.getElementById("point_blue");
+    var point_red=document.getElementById("point_red");
+    var point_green=document.getElementById("point_green");
+    var point_blue=document.getElementById("point_blue");
 
-    return vec4(background_red.value, background_green.value, background_blue.value, )
+    return vec4(point_red.value, point_green.value, point_blue.value, 1)
 }
 
 window.onload = main;
