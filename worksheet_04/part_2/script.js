@@ -5,6 +5,9 @@ function main(){
     var gl = canvas.getContext("webgl");
     var program = initShaders(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(program);
+    gl.enable(gl.CULL_FACE)
+    gl.enable(gl.DEPTH_TEST);
+    gl.frontFace(gl.CW);
     
     var up=vec3(0,1,0);
     var eye=vec3(0,0,3);
@@ -73,6 +76,10 @@ function initSphere(gl,program, n_subdivisions) {
         vertices.push(a);
         vertices.push(b);
         vertices.push(c);
+        var o=vec3(0.5,0.5,0.5)
+        vertex_color.push(add(mult(vec3(a[0],a[1],a[2]),o),o))
+        vertex_color.push(add(mult(vec3(b[0],b[1],b[2]),o),o))
+        vertex_color.push(add(mult(vec3(c[0],c[1],c[2]),o),o))
     }
 
     vertices=[]
@@ -91,6 +98,13 @@ function initSphere(gl,program, n_subdivisions) {
     gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition);
     
+    gl.deleteBuffer(gl.cbuffer);
+    gl.cbuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.cbuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(vertex_color), gl.STATIC_DRAW);
+    var vColor = gl.getAttribLocation(program, "a_Color");
+    gl.vertexAttribPointer(vColor, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vColor);
     return vertices;
 }
 
