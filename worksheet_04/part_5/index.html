@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Worksheet4-Part 4</title>
+        <title>Worksheet4-Part 5</title>
     </head>
     <body>
         <div>
@@ -41,6 +41,18 @@
         <script id="vertex-shader" type="x-shader/x-vertex">
             uniform mat4 u_model_view_matrix;
 
+            attribute vec4 a_Position;
+            attribute vec4 a_Color;
+
+            varying vec4 v_Normal;
+            void main() {
+                gl_Position = u_model_view_matrix*a_Position;
+                v_Normal=a_Position;
+            }
+        </script>
+        <script id="fragment-shader" type="x-shader/x-fragment">
+            precision mediump float;
+            
             uniform vec4 u_lightPos;
 
             uniform vec3 u_Le;
@@ -52,29 +64,19 @@
 
             uniform vec3 u_eye;
 
-            attribute vec4 a_Position;
-            attribute vec4 a_Color;
-            varying vec4 v_Color;
+            varying vec4 v_Normal;
 
             void main() {
-                vec3 w_i = u_lightPos.w == 0.0 ? normalize(-u_lightPos.xyz) : normalize(u_lightPos.xyz - a_Position.xyz);
-                float cos_teta=dot(a_Position.xyz,w_i);
+                vec3 w_i = u_lightPos.w == 0.0 ? normalize(-u_lightPos.xyz) : normalize(u_lightPos.xyz - v_Normal.xyz);
+                float cos_teta=dot(v_Normal.xyz,w_i);
                 vec3 Ld = cos_teta>0.0 ? u_kd*u_Le*cos_teta : u_kd*u_Le*0.0;
 
-                vec3 w_r=2.0*dot(w_i,a_Position.xyz)*a_Position.xyz-w_i;
-                vec3 w_o=normalize(u_eye-a_Position.xyz);
+                vec3 w_r=2.0*dot(w_i,v_Normal.xyz)*v_Normal.xyz-w_i;
+                vec3 w_o=normalize(u_eye-v_Normal.xyz);
                 vec3 L_sp=dot(w_r,w_o)>0.0 ? u_ks*u_Le*pow(dot(w_r,w_o),u_alpha.x) : vec3(0.0);
                 vec3 Lo=Ld+L_sp+u_ka*u_La;
-
-                v_Color = vec4(Lo,1);
-                gl_Position = u_model_view_matrix*a_Position;
-            }
-        </script>
-        <script id="fragment-shader" type="x-shader/x-fragment">
-            precision mediump float;
-            varying vec4 v_Color;
-            void main() {
-                gl_FragColor = v_Color;
+                
+                gl_FragColor = vec4(Lo,1);
             }
         </script>
         <script type="text/javascript" src="../../angel_common/MV.js"></script>

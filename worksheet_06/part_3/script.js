@@ -1,0 +1,170 @@
+function main(){
+    n_subdivisions=1;
+
+    var canvas = document.getElementById("canvas");
+    var gl = canvas.getContext("webgl");
+    var program = initShaders(gl, "vertex-shader", "fragment-shader");
+    gl.useProgram(program);
+    gl.enable(gl.CULL_FACE)
+    gl.enable(gl.DEPTH_TEST);
+    gl.frontFace(gl.CW);
+    
+    var radious=3;
+    var alpha=1;
+    var up=vec3(0,1,0);
+    var at=vec3(0,0,0);
+    aspect=canvas.width/canvas.height;
+
+    var texInfo = loadImageAndCreateTextureInfo(gl,'earth.jpg');
+
+    function rotate_camera(){
+        var eye=get_eye(radious,alpha);
+        alpha=alpha+0.05;
+        var V =lookAt(eye, at, up);
+        var P = perspective(45, aspect, 0.1, 10);
+        
+        var model_view_matrix=mult(P,V)
+    
+        var Mloc=gl.getUniformLocation(program, "u_model_view_matrix");
+        gl.uniformMatrix4fv(Mloc, false, flatten(model_view_matrix)); 
+        render(gl,vertices.length);
+        window.requestAnimationFrame(rotate_camera);
+    }
+    vertices=initSphere(gl, program, n_subdivisions);
+    rotate_camera();
+
+    var inc_button = document.getElementById("inc_button");
+    inc_button.addEventListener("click", function (ev) {
+        n_subdivisions+=1;
+        initSphere(gl, program, n_subdivisions)
+    });
+
+    var inc_button = document.getElementById("dec_button");
+    inc_button.addEventListener("click", function (ev) {
+        if (n_subdivisions>1){
+            n_subdivisions-=1;
+            initSphere(gl, program, n_subdivisions)
+        }
+    });
+
+}
+function render(gl, n_vertices){
+    gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);    
+    gl.drawArrays(gl.TRIANGLES, 0, n_vertices);
+}
+function get_eye(r,alpha){
+    return vec3(r*Math.sin(alpha),0,r*Math.cos(alpha));
+}
+function initSphere(gl,program, n_subdivisions) {
+    function tetrahedron(a, b, c, d, n)
+    {
+        divideTriangle(a, b, c, n);
+        divideTriangle(d, c, b, n);
+        divideTriangle(a, d, b, n);
+        divideTriangle(a, c, d, n);
+    }
+    
+    function divideTriangle(a, b, c, count)
+    {
+        if (count > 0) {
+            var ab = normalize(mix(a, b, 0.5), true);
+            var ac = normalize(mix(a, c, 0.5), true);
+            var bc = normalize(mix(b, c, 0.5), true);
+            divideTriangle(a, ab, ac, count - 1);
+            divideTriangle(ab, b, bc, count - 1);
+            divideTriangle(bc, c, ac, count - 1);
+            divideTriangle(ab, bc, ac, count - 1);
+        }
+        else {
+            triangle(a, b, c);
+        }
+    }
+    
+    function triangle(a, b, c){
+        vertices.push(a);
+        vertices.push(b);
+        vertices.push(c);
+        var o=vec3(0.5,0.5,0.5)
+        vertex_color.push(add(mult(vec3(a[0],a[1],a[2]),o),o))
+        vertex_color.push(add(mult(vec3(b[0],b[1],b[2]),o),o))
+        vertex_color.push(add(mult(vec3(c[0],c[1],c[2]),o),o))
+    }
+
+    light=vec4(0,0,-1,0);
+    var Posloc=gl.getUniformLocation(program, "u_lightPos");
+    gl.uniform4f(Posloc,light[0],light[1],light[2],light[3]);
+    Le=vec3(1,1,1);
+    var Leloc=gl.getUniformLocation(program, "u_Le");
+    gl.uniform3f(Leloc,Le[0],Le[1],Le[2]);
+
+    vertices=[]
+    vertex_color=[]
+
+    var va = vec4(0.0, 0.0, -1.0,1);
+    var vb = vec4(0.0, 0.942809, 0.333333,1);
+    var vc = vec4(-0.816497, -0.471405, 0.333333,1);
+    var vd = vec4(0.816497, -0.471405, 0.333333,1);
+    tetrahedron(va, vb, vc, vd, n_subdivisions);
+    gl.deleteBuffer(gl.vbuffer);
+    gl.vbuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.vbuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
+    var vPosition = gl.getAttribLocation(program, "a_Position");
+    gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vPosition);
+    /*
+    gl.deleteBuffer(gl.cbuffer);
+    gl.cbuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.cbuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(vertex_color), gl.STATIC_DRAW);
+    var vColor = gl.getAttribLocation(program, "a_Color");
+    gl.vertexAttribPointer(vColor, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vColor);
+    */
+    return vertices;
+}
+
+window.onload = main;
+
+
+function requestCORSIfNotSameOrigin(img, url) {
+    if ((new URL(url, window.location.href)).origin !== window.location.origin) {
+      img.crossOrigin = "";
+    }
+  }
+
+  // creates a texture info { width: w, height: h, texture: tex }
+  // The texture will start with 1x1 pixels and be updated
+  // when the image has loaded
+  function loadImageAndCreateTextureInfo(gl,url) {
+    var tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    // Fill the texture with a 1x1 blue pixel.
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+                  new Uint8Array([0, 0, 255, 255]));
+
+    // let's assume all images are not a power of 2
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+    var textureInfo = {
+      width: 1,   // we don't know the size until it loads
+      height: 1,
+      texture: tex,
+    };
+    var img = new Image();
+    img.addEventListener('load', function() {
+      textureInfo.width = img.width;
+      textureInfo.height = img.height;
+
+      gl.bindTexture(gl.TEXTURE_2D, textureInfo.texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    });
+    requestCORSIfNotSameOrigin(img, url);
+    img.src = url;
+
+    return textureInfo;
+  }

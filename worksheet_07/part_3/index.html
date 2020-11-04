@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Worksheet7-Part 3</title>
+    </head>
+    <body>
+        <div>
+            <p>WARNING! to correctly load the texture the browser must be run in unsecure mode</p>
+            <p>
+                <input type="button" id="dec_button" value="Decrement subdivision">
+                <input type="button" id="inc_button"value="Increment subdivision">
+            </p>
+        </div>
+
+        <canvas id="canvas" width="512" height="512"/>
+        <script type="text/javascript" src="../../angel_common/initShaders.js"></script>
+
+        <script id="vertex-shader" type="x-shader/x-vertex">
+            #define PI 3.1415926538
+            uniform mat4 u_model_view_matrix;
+            uniform mat4 u_m_tex;
+            uniform bool u_reflective;
+            uniform vec3 u_eye;
+
+            attribute vec4 a_Position;
+            attribute vec4 a_Color;
+
+            varying vec4 v_Color;
+            varying vec4 v_Normal;
+
+            void main() {
+                if(u_reflective){
+                    vec3 iw=(a_Position.xyz-u_eye)/length(a_Position.xyz-u_eye);
+                    vec3 normal=reflect(iw,a_Position.xyz);
+                    v_Normal=vec4(normal[0],normal[1],normal[2],0);
+                }else{
+                    v_Normal=u_m_tex*a_Position;
+                }
+
+                gl_Position = u_model_view_matrix*a_Position;
+                v_Color=a_Color;
+            }
+        </script>
+        <script id="fragment-shader" type="x-shader/x-fragment">
+            #define PI 3.1415926538
+            precision mediump float;
+            
+            uniform samplerCube u_texMap;
+
+            varying vec4 v_Color;
+            varying vec4 v_Normal;
+
+            uniform vec4 u_lightPos;
+            uniform vec3 u_Le;
+            
+            void main() {
+                vec4 color=textureCube(u_texMap, v_Normal.xyz);
+
+                vec3 w_i = u_lightPos.w == 0.0 ? normalize(-u_lightPos.xyz) : normalize(u_lightPos.xyz - v_Normal.xyz);
+                float cos_teta=dot(v_Normal.xyz,w_i);
+                vec3 Ld = cos_teta>0.0 ? color.xyz*u_Le*cos_teta : color.xyz*u_Le*0.0;
+               
+            
+                gl_FragColor = color;
+            }
+        </script>
+        <script type="text/javascript" src="../../angel_common/MV.js"></script>
+        <script type="text/javascript" src="../../angel_common/webgl-utils.js"></script>
+
+        <script type="text/javascript", src="script.js"></script>
+    </body>
+</html>

@@ -20,7 +20,7 @@ function main(){
         var eye_loc=gl.getUniformLocation(program, "u_eye");
         gl.uniform3f(eye_loc,eye[0],eye[1],eye[2]);
 
-        alpha=alpha+0.01;
+        alpha=alpha+0.1;
         var V =lookAt(eye, at, up);
         var P = perspective(45, aspect, 0.1, 10);
         
