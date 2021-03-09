@@ -24,13 +24,11 @@ function main() {
     // Start reading the OBJ file
     readOBJFile('monkey.obj', gl, model, 1, true);
 
-    alpha=0;
-    radious=4;
-    function rotate_camera(){
-        eye=get_eye(radious,alpha)
-        alpha=alpha+0.05;
+    currentAngle=[0,0]
+    initEventHandlers(canvas, currentAngle)
 
-        draw(gl, program,model,eye);
+    function rotate_camera(){
+        draw(gl, program,model);
         window.requestAnimationFrame(rotate_camera);
     }
     rotate_camera()
@@ -39,6 +37,8 @@ function draw(gl, program,model,eye) {
     var alpha=1;
     var up=vec3(0,1,0);
     var at=vec3(0,0,0);
+    var eye=vec3(4,0,4)
+
     aspect=canvas.width/canvas.height;
 
     light=vec4(0,0,1,0);
@@ -56,8 +56,10 @@ function draw(gl, program,model,eye) {
         alpha=alpha+0.01;
         var V =lookAt(eye, at, up);
         var P = perspective(45, aspect, 0.1, 10);
-        
+
         var model_view_matrix=mult(P,V)
+        model_view_matrix=mult(model_view_matrix,rotate(currentAngle[0],vec4(1, 0, 0.0, 0.0)))
+        model_view_matrix=mult(model_view_matrix,rotate(currentAngle[1],vec4(0, 1, 0.0, 0.0)))
     
         var Mloc=gl.getUniformLocation(program, "u_model_view_matrix");
         gl.uniformMatrix4fv(Mloc, false, flatten(model_view_matrix));
@@ -134,6 +136,40 @@ function onReadComplete(gl, model, objDoc) {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, drawingInfo.indices, gl.STATIC_DRAW);
 
     return drawingInfo;
+}
+
+function get_eye(r,alpha){
+    return vec3(r*Math.sin(alpha),0,r*Math.cos(alpha));
+}
+
+
+function initEventHandlers(canvas, currentAngle) {
+    var dragging = false; // Dragging or not
+    var lastX = -1, lastY = -1; // Last position of the mouse
+
+    canvas.onmousedown = function(ev) { // Mouse is pressed
+        var x = ev.clientX, y = ev.clientY;
+        // Start dragging if a mouse is in <canvas>
+        var rect = ev.target.getBoundingClientRect();
+        if (rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom) {
+            lastX = x; lastY = y;
+            dragging = true;
+        }
+    };
+    // Mouse is released
+    canvas.onmouseup = function(ev) { dragging = false; };
+    canvas.onmousemove = function(ev) { // Mouse is moved
+        var x = ev.clientX, y = ev.clientY;
+        if (dragging) {
+            var factor = 100/canvas.height; // The rotation ratio
+            var dx = factor * (x - lastX);
+            var dy = factor * (y - lastY);
+            // Limit x-axis rotation angle to -90 to 90 degrees
+            currentAngle[0] = Math.max(Math.min(currentAngle[0] + dy, 90.0), -90.0);
+            currentAngle[1] = currentAngle[1] + dx;
+        }
+        lastX = x, lastY = y;
+    };
 }
 
 function get_eye(r,alpha){

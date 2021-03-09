@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Worksheet4-Part 6</title>
+    </head>
+    <body>
+        <ol type="a">
+            <li>
+                Phong shading is our reflection model used to calculate the colours of our objects. Phong shading is an evolution of Gourad shading which interpolates
+                the normals of each vertex instead of interpolating the colours.
+            </li>
+            <li>
+                Flat shading is the simplest model, we have a single normal for each polygon and the shading is constant on all the surface. 
+                In Gourad shading we have a normal per vertex, we compute the colour for each vertex and then interpolate it between all of the vertexes of the polygon.
+                Phong shading is the most complex model between the tree. Instead of interpolating the colour between vertexes we interpolate the normals and then calculate the colour for each fragment.
+            </li>
+            <li>
+                A directional light illuminates the objects only from one direction, a point light illuminates the objects from all directions from a given point.
+            </li>
+            <li>
+                To compute the lighting for glossy objects we need the direction towards the observer. The easiest way to compute is by using the eye position. 
+                So we can say that the eye position influences the shading of an object
+            </li>
+
+            <li>
+                The highlight disappears
+            </li>
+
+            <li>
+                as the shiningness increases the highlight get's smaller and viceversa
+            </li>
+
+            <li>
+                The lighting was computed in world space coordinates
+            </li>
+
+        </ol>
+    </body>
+</html>

@@ -1,44 +1,27 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Worksheet4-Part 5</title>
+        <title>Worksheet5-Part 4</title>
     </head>
     <body>
-        <p>
-            Phong shading is the most complex between the three methods (flat, gourad and phong).
-            Gourad shading needs a lot of triangles to make the polygons look good. In gourad shading we calculate the color of each vertex and than interpolate it between all of the fragments.
-            Phong shading on the other hand does the opposite interpolates the vectors needed to calculate the color for each pixel and calculates then calculates the colour for each fragment, producing thus a much better
-
-        </p>
         <div>
             <p>
-                <input type="button" id="dec_button" value="Decrement subdivision">
-                <input type="button" id="inc_button"value="Increment subdivision">
+                L_e: 0<input type="range" step="0.1" min="0" max="2" value="1" class="slider" id="le_range">2
             </p>
-
-            <p>L_e:</p>
             <p>
-                0<input type="range" step="0.1" min="0" max="2" value="1" class="slider" id="le_range">2
+                L_a: 0<input type="range" step="0.1" min="0" max="1" value="0" class="slider" id="la_range">1
             </p>
-            <p>L_a:</p>
             <p>
-                0<input type="range" step="0.1" min="0" max="1" value="0" class="slider" id="la_range">1
+                k_a: 0<input type="range" step="0.1" min="0" max="1" value="0" class="slider" id="ka_range">1
             </p>
-            <p>k_a:</p>
             <p>
-                0<input type="range" step="0.1" min="0" max="1" value="0" class="slider" id="ka_range">1
+               k_d: 0<input type="range" step="0.1" min="0" max="1" value="0" class="slider" id="kd_range">1
             </p>
-            <p>k_d:</p>
             <p>
-                0<input type="range" step="0.1" min="0" max="1" value="0" class="slider" id="kd_range">1
+               k_s: 0<input type="range" step="0.1" min="0" max="1" value="0.5" class="slider" id="ks_range">2
             </p>
-            <p>k_s:</p>
             <p>
-                0<input type="range" step="0.1" min="0" max="1" value="0.5" class="slider" id="ks_range">2
-            </p>
-            <p>Shininess:</p>
-            <p>
-                0<input type="range" step="1" min="1" max="1000" value="10" class="slider" id="alpha_range">1.0e3
+               Shininess:0<input type="range" step="1" min="1" max="1000" value="10" class="slider" id="alpha_range">1.0e3
             </p>
         </div>
 
@@ -48,12 +31,17 @@
             uniform mat4 u_model_view_matrix;
 
             attribute vec4 a_Position;
+            attribute vec4 a_Normal;
             attribute vec4 a_Color;
 
             varying vec4 v_Normal;
+            varying vec4 v_Color;
+
             void main() {
                 gl_Position = u_model_view_matrix*a_Position;
-                v_Normal=a_Position;
+                v_Normal=a_Normal;
+                v_Color=a_Color;
+
             }
         </script>
         <script id="fragment-shader" type="x-shader/x-fragment">
@@ -71,6 +59,7 @@
             uniform vec3 u_eye;
 
             varying vec4 v_Normal;
+            varying vec4 v_Color;
 
             void main() {
                 vec3 w_i = u_lightPos.w == 0.0 ? normalize(-u_lightPos.xyz) : normalize(u_lightPos.xyz - v_Normal.xyz);
@@ -83,9 +72,12 @@
                 vec3 Lo=Ld+L_sp+u_ka*u_La;
                 
                 gl_FragColor = vec4(Lo,1);
+                //gl_FragColor = v_Color;
+
             }
         </script>
         <script type="text/javascript" src="../../angel_common/MV.js"></script>
+        <script type="text/javascript" src="../../angel_common/OBJParser.js"></script>
         <script type="text/javascript" src="../../angel_common/webgl-utils.js"></script>
 
         <script type="text/javascript", src="script.js"></script>

@@ -73,6 +73,7 @@ function main(){
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.generateMipmap(gl.TEXTURE_2D);
 
     render(gl, vertices.length)
 
@@ -102,10 +103,31 @@ function main(){
         render(gl, vertices.length)
     });
 
-    mipmap_button=document.getElementById("b_mipmap");
+    mipmap_button=document.getElementById("b_mipmap_n_n");
     mipmap_button.addEventListener("click", function(ev){
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);        
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);        
+        render(gl, vertices.length)
+    });
+
+    mipmap_button=document.getElementById("b_mipmap_l_n");
+    mipmap_button.addEventListener("click", function(ev){
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);        
+        render(gl, vertices.length)
+    });
+
+    mipmap_button=document.getElementById("b_mipmap_n_l");
+    mipmap_button.addEventListener("click", function(ev){
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);        
+        render(gl, vertices.length)
+    });
+
+    mipmap_button=document.getElementById("b_mipmap_l_l");
+    mipmap_button.addEventListener("click", function(ev){
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);        
         render(gl, vertices.length)
     });
 }

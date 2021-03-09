@@ -24,6 +24,38 @@ function main() {
     // Start reading the OBJ file
     readOBJFile('monkey.obj', gl, model, 1, true);
 
+    var le_range = document.getElementById("le_range");
+    le_range.addEventListener("input", function (ev) {
+        update_from_slider(gl,program,"u_Le","le_range")
+    });
+    var la_range = document.getElementById("la_range");
+    la_range.addEventListener("input", function (ev) {
+        update_from_slider(gl,program,"u_La","la_range")
+    });
+    var ka_range = document.getElementById("ka_range");
+    ka_range.addEventListener("input", function (ev) {
+        update_from_slider(gl,program,"u_ka","ka_range")
+    });
+    var kd_range = document.getElementById("kd_range");
+    kd_range.addEventListener("input", function (ev) {
+        update_from_slider(gl,program,"u_kd","kd_range")
+    });
+    var ks_range = document.getElementById("ks_range");
+    ks_range.addEventListener("input", function (ev) {
+        update_from_slider(gl,program,"u_ks","ks_range")
+    });
+    var alpha_range = document.getElementById("alpha_range");
+    alpha_range.addEventListener("input", function (ev) {
+        update_from_slider(gl,program,"u_alpha","alpha_range")
+    });
+    
+    update_from_slider(gl,program,"u_Le","le_range")
+    update_from_slider(gl,program,"u_La","alpha_range")
+    update_from_slider(gl,program,"u_ka","ka_range")
+    update_from_slider(gl,program,"u_kd","kd_range")
+    update_from_slider(gl,program,"u_ks","ks_range")
+    update_from_slider(gl,program,"u_alpha","alpha_range")
+
     alpha=0;
     radious=4;
     function rotate_camera(){
@@ -138,6 +170,12 @@ function onReadComplete(gl, model, objDoc) {
 
 function get_eye(r,alpha){
     return vec3(r*Math.sin(alpha),0,r*Math.cos(alpha));
+}
+
+function update_from_slider(gl,program,uniform_name,slider){
+    slider = document.getElementById(slider)
+    var loc=gl.getUniformLocation(program, uniform_name);
+    gl.uniform3f(loc,slider.value,slider.value,slider.value);
 }
 
 window.onload = main;

@@ -4,6 +4,22 @@
         <title>Worksheet 6-Part 2</title>
     </head>
     <body>
+        <h3>Different filtering modes</h3>
+        <ul>
+            <li>
+                Nearest filtering is the most basic type of filter possible. With this filtering option we always chose the nearest texture texel to our uv-coordinates 
+                This strategy is simple however it's not optimal since it can generate many aliasing problems.
+            </li>
+            <li>
+                A much better approach is the one used  by linear filtering which makes a linear interpolation of all the texels in the neighborhood given by our uv-coordinates.
+                This approach is better but it can still generate aliasing artifacts for objects that are really far.
+            </li>
+            <li>
+                Another approach offered by openGl is mipmapping. We can generate smaller and smaller versions of the texture obtained by using a box filter which averages each pixel with all of it's neighbour pixels.
+                We do this until we obtain a 1x1 texture. Then if we have an area of screen that is smaller than the texel of our original texture opengl is going to use the appropiate mipmap texture automatically.
+                We can see that the mipmap filterings reduce much more the aliasing artifacts of the previous two filters but the most far parts of our plane are coloured completly in gray which is the average between all of the white and black cells.
+            </li>
+        </ul>
         <div>
             <p>Texture Wrapping mode:</p>
             <p>
@@ -14,7 +30,10 @@
             <p>
                 <input type="button" value="nearest" id="b_nearest">
                 <input type="button" value="linear" id="b_linear">
-                <input type="button" value="mipmap" id="b_mipmap">
+                <input type="button" value="nearest mipmap nearest" id="b_mipmap_n_n">
+                <input type="button" value="linear mipmap nearest" id="b_mipmap_l_n">
+                <input type="button" value="nearest mipmap linear" id="b_mipmap_n_l">
+                <input type="button" value="linear mipmap linear" id="b_mipmap_l_l">
 
             </p>
         </div>
@@ -47,6 +66,7 @@
                 gl_FragColor = texture2D(u_texMap, v_Texcoord);
             }
         </script>
+
         <script type="text/javascript" src="../../angel_common/MV.js"></script>
         <script type="text/javascript" src="../../angel_common/webgl-utils.js"></script>
 

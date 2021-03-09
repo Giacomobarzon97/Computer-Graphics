@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Worksheet 9-Part 2</title>
+    </head>
+    <body>
+        <div>
+            <p>
+                L_e: 0<input type="range" step="0.1" min="0" max="2" value="1" class="slider" id="le_range">2
+            </p>
+            <p>
+                L_a: 0<input type="range" step="0.1" min="0" max="1" value="0" class="slider" id="la_range">1
+            </p>
+            <p>
+                k_a: 0<input type="range" step="0.1" min="0" max="1" value="0" class="slider" id="ka_range">1
+            </p>
+            <p>
+               k_d: 0<input type="range" step="0.1" min="0" max="1" value="0" class="slider" id="kd_range">1
+            </p>
+            <p>
+               k_s: 0<input type="range" step="0.1" min="0" max="1" value="0.5" class="slider" id="ks_range">2
+            </p>
+            <p>
+               Shininess:0<input type="range" step="1" min="1" max="1000" value="10" class="slider" id="alpha_range">1.0e3
+            </p>
+            <p>Moving pot: <input type="checkbox" id="moving_pot" checked=true> </p>
+            <p>Moving light: <input type="checkbox" id="moving_light" checked=true> </p>
+
+        </div>
+
+        <canvas id="canvas" width="512" height="512"/>
+        <script type="text/javascript" src="../../angel_common/initShaders.js"></script>
+        <script id="object-vertex-shader" type="x-shader/x-vertex">
+            uniform mat4 u_model_view_matrix;
+
+            attribute vec4 a_Position;
+            attribute vec4 a_Normal;
+            attribute vec4 a_Color;
+
+            varying vec4 v_Normal;
+            varying vec4 v_Color;
+
+            void main() {
+                gl_Position = u_model_view_matrix*a_Position;
+                v_Normal=a_Normal;
+                v_Color=a_Color;
+
+            }
+        </script>
+        <script id="object-fragment-shader" type="x-shader/x-fragment">
+            precision mediump float;
+            
+            uniform vec4 u_lightPos;
+
+            uniform vec3 u_Le;
+            uniform vec3 u_La;
+            uniform vec3 u_ka;
+            uniform vec3 u_kd;
+            uniform vec3 u_ks;
+            uniform vec3 u_alpha;
+            uniform float u_visibility;
+
+            uniform vec3 u_eye;
+
+            varying vec4 v_Normal;
+            varying vec4 v_Color;
+
+            void main() {
+                vec3 w_i = u_lightPos.w == 0.0 ? normalize(-u_lightPos.xyz) : normalize(u_lightPos.xyz - v_Normal.xyz);
+                float cos_teta=dot(v_Normal.xyz,w_i);
+                vec3 Ld = cos_teta>0.0 ? u_kd*u_Le*cos_teta : u_kd*u_Le*0.0;
+
+                vec3 w_r=2.0*dot(w_i,v_Normal.xyz)*v_Normal.xyz-w_i;
+                vec3 w_o=normalize(u_eye-v_Normal.xyz);
+                vec3 L_sp=dot(w_r,w_o)>0.0 ? u_ks*u_Le*pow(dot(w_r,w_o),u_alpha.x) : vec3(0.0);
+                vec3 Lo=Ld+L_sp+u_ka*u_La;
+                
+                gl_FragColor = vec4(Lo*u_visibility,1);
+                //gl_FragColor = v_Color;
+
+            }
+        </script>
+        
+
+        <script id="ground-vertex-shader" type="x-shader/x-vertex">
+            uniform mat4 u_model_view_matrix;
+
+            attribute vec4 a_Position;
+            attribute vec3 a_Texcoord;
+
+            varying vec3 v_Texcoord;
+            varying vec4 v_Color;
+            varying vec4 v_p_world;
+
+            void main() {
+                gl_Position = u_model_view_matrix*a_Position;
+                v_p_world=a_Position;
+                v_Texcoord=a_Texcoord;
+            }
+        </script>
+        <script id="ground-fragment-shader" type="x-shader/x-fragment">
+            precision mediump float;
+
+            uniform sampler2D u_ground_tex;
+            uniform sampler2D u_shadow_map;
+            uniform mat4 u_P_l;
+            uniform mat4 u_V_l;
+
+            uniform float u_visibility;
+
+            varying vec4 v_p_world;
+            varying vec3 v_Texcoord;
+            varying vec4 v_Color;
+            
+            void main() {
+                vec4 tex_color=texture2D(u_ground_tex, v_Texcoord.xy);
+                vec4 p_l=u_P_l*u_V_l*v_p_world;
+                vec4 shadowCoord=0.5*(p_l/p_l.w)+0.5;
+                vec4 shadow_map=texture2D(u_shadow_map, shadowCoord.xy);
+                float depth = shadow_map.w;
+
+                if(shadowCoord.z>depth+0.005){
+                    gl_FragColor =tex_color;
+                }else{
+                    gl_FragColor =vec4(0,0,0,0.8);
+                }
+                //gl_FragColor =shadow_map;
+
+            }
+        </script>
+
+
+        <script type="text/javascript" src="../../angel_common/MV.js"></script>
+        <script type="text/javascript" src="../../angel_common/OBJParser.js"></script>
+        <script type="text/javascript" src="../../angel_common/webgl-utils.js"></script>
+
+        <script type="text/javascript", src="script.js"></script>
+    </body>
+</html>
